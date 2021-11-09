@@ -1,0 +1,11 @@
+- name: Update system
+  ansible.builtin.import_tasks: ../tasks/update-system.yml
+
+- name: Update timezone to {{ timezone }}
+  ansible.builtin.timezone:
+    name: "{{ timezone }}"
+  register: timezone_result
+
+- name: Reboot host
+  ansible.builtin.reboot:
+  when: timezone_result.changed

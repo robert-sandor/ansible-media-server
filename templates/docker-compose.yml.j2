@@ -1,0 +1,125 @@
+version: "3.8"
+
+services:
+
+{% if traefik_enable %}
+  {{ traefik_name }}:
+    container_name: {{ traefik_name }}
+    hostname: {{ traefik_name }}
+    image: {{ traefik_image }}:{{ traefik_version }}
+    command:
+      - "--api=true"
+      - "--accesslog={{ traefik_enable_access_logs | ternary('true', 'false') }}"
+      - "--providers.docker=true"
+      - "--providers.docker.network={{ network_name }}"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.{{ acme_provider }}.acme.dnschallenge=true"
+      - "--certificatesresolvers.{{ acme_provider }}.acme.dnschallenge.provider={{ acme_provider }}"
+      - "--certificatesresolvers.{{ acme_provider }}.acme.email={{ acme_email }}"
+      - "--certificatesresolvers.{{ acme_provider }}.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.{{ acme_provider }}.acme.caserver=https://acme{% if acme_testing_mode %}-staging{% endif %}-v02.api.letsencrypt.org/directory"
+      - "--metrics.prometheus={{ traefik_enable_metrics | ternary('true', 'false') }}"
+      - "--entryPoints.metrics.address=:{{ traefik_metrics_port }}"
+      - "--metrics.prometheus.entryPoint=metrics"
+    environment:
+      - PUID={{ ansible_facts.user_uid }}
+      - PGID={{ ansible_facts.user_gid }}
+      - TZ={{ timezone }}
+{% for e in acme_env %}
+      - {{ e }}={{ acme_env[e] }}
+{% endfor %}
+    networks:
+      - {{ network_name }}
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 8080
+{% if traefik_enable_metrics %}
+      - {{ traefik_metrics_port }}
+{% endif %}
+    volumes:
+      - {{ acme_volume }}:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`{{ traefik_name }}.{{ domain }}`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.tls.certresolver={{ acme_provider }}
+    restart: {{ restart_policy }}
+
+{% endif %}
+  {{ plex_name }}:
+    container_name: {{ plex_name }}
+    hostname: {{ plex_hostname }}
+    image: {{ plex_image }}:{{ plex_version }}
+    environment:
+      - TZ={{ timezone }}
+      - HOSTNAME={{ plex_hostname }}.{{ domain }}
+      - PLEX_CLAIM={{ plex_claim }}
+      - ADVERTISE_IP=http://{{ ansible_facts.default_ipv4.address }}:32400
+    networks:
+      - {{ network_name }}
+    ports:
+      - 32400:32400/tcp
+      - 32400:32400/udp
+    volumes:
+      - {{ plex_volume }}:/config
+      - {{ plex_transcode_volume }}:/transcode
+      - {{ nfs_data_volume }}:/data
+{% if plex_enable_quicksync %}
+    devices:
+      - /dev/dri:/dev/dri
+{% endif %}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ plex_name }}.rule=Host(`{{ plex_hostname }}.{{ domain }}`)
+      - traefik.http.routers.{{ plex_name }}.entrypoints=websecure
+      - traefik.http.services.{{ plex_name }}.loadbalancer.server.port=32400
+      - traefik.http.routers.{{ plex_name }}.service={{ plex_name }}
+      - traefik.http.routers.{{ plex_name }}.tls.certresolver={{ acme_provider }}
+    restart: {{ restart_policy }}
+
+{% if tautulli_enable %}
+  {{ tautulli_name }}:
+    container_name: {{ tautulli_name }}
+    hostname: {{ tautulli_hostname }}
+    image: {{ tautulli_image }}:{{ tautulli_version }}
+    environment:
+      - PUID={{ ansible_facts.user_uid }}
+      - PGID={{ ansible_facts.user_gid }}
+      - TZ={{ timezone }}
+    networks:
+      - {{ network_name }}
+    expose:
+      - 8181
+    volumes:
+      - {{ tautulli_volume }}:/config
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ tautulli_name }}.rule=Host(`{{ tautulli_hostname }}.{{ domain }}`)
+      - traefik.http.routers.{{ tautulli_name }}.entrypoints=websecure
+      - traefik.http.services.{{ tautulli_name }}.loadbalancer.server.port=8181
+      - traefik.http.routers.{{ tautulli_name }}.service={{ tautulli_name }}
+      - traefik.http.routers.{{ tautulli_name }}.tls.certresolver={{ acme_provider }}
+
+{% endif %}
+networks:
+  {{ network_name }}:
+    external: true
+
+volumes:
+  {{ nfs_data_volume }}:
+    external: true
+  {{ acme_volume }}:
+    external: true
+  {{ plex_volume }}:
+    external: true
+  {{ plex_transcode_volume }}:
+    external: true
+  {{ tautulli_volume }}:
+    external: true

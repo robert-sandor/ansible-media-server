@@ -1,0 +1,58 @@
+timezone: Etc/UTC
+
+# project vars
+project_name: "media-server"
+project_dir: "~/{{ project_name }}"
+restart_policy: unless-stopped
+network_name: "{{ project_name }}-net"
+domain: example.com
+validate_certificates: "{{ not acme_testing_mode }}"
+
+nfs_data_server: 192.168.1.10
+nfs_data_device: /data
+nfs_data_volume: nfs-data
+
+# Updates
+update_system: no
+restart_system: no
+update_containers: yes
+docker_prune: yes
+
+# Teardown
+teardown_containers: yes
+teardown_images: yes
+teardown_networks: yes
+teardown_volumes: no
+teardown_project_dir: yes
+
+# Traefik
+traefik_version: v2.5
+traefik_name: traefik
+traefik_image: traefik
+traefik_enable_metrics: yes
+traefik_enable_access_logs: false
+traefik_metrics_port: 8081
+acme_email: email@example.com
+acme_provider: cloudflare
+acme_volume: acme-data
+acme_testing_mode: yes
+acme_env:
+  CF_API_EMAIL: email@example.com
+  CF_DNS_API_TOKEN: <cloudflare_token>
+
+plex_version: latest
+plex_image: plexinc/pms-docker
+plex_name: plex
+plex_hostname: "{{ plex_name }}"
+plex_volume: "{{ plex_name }}-data"
+plex_transcode_volume: "{{ plex_name }}-transcode-data"
+
+plex_claim: changeme
+plex_enable_quicksync: no
+
+tautulli_enable: yes
+tautulli_version: latest
+tautulli_image: ghcr.io/tautulli/tautulli
+tautulli_name: tautulli
+tautulli_hostname: "{{ tautulli_name }}"
+tautulli_volume: "{{ tautulli_name }}-data"

@@ -26,6 +26,7 @@ teardown_volumes: no
 teardown_project_dir: yes
 
 # Traefik
+traefik_enable: yes
 traefik_version: v2.5
 traefik_name: traefik
 traefik_image: traefik
@@ -56,3 +57,16 @@ tautulli_image: ghcr.io/tautulli/tautulli
 tautulli_name: tautulli
 tautulli_hostname: "{{ tautulli_name }}"
 tautulli_volume: "{{ tautulli_name }}-data"
+
+# Prometheus Node Exporter
+prom_node_exp_enable: yes
+prom_node_exp_version: latest
+prom_node_exp_name: node-exporter 
+prom_node_exp_image: prom/node-exporter
+
+# Portainer Agent
+pagent_enable: yes
+pagent_name: pagent
+pagent_hostname: "{{ pagent_name }}"
+pagent_image: portainer/agent
+pagent_version: latest

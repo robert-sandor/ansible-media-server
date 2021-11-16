@@ -58,6 +58,28 @@ tautulli_name: tautulli
 tautulli_hostname: "{{ tautulli_name }}"
 tautulli_volume: "{{ tautulli_name }}-data"
 
+# Tdarr
+tdarr_server_enable: yes
+tdarr_server_name: tdarr-server
+tdarr_server_hostname: tdarr
+tdarr_server_image: haveagitgat/tdarr
+tdarr_server_version: latest
+tdarr_server_port: 8266
+tdarr_server_webui_port: 8265
+
+tdarr_node_enable: yes
+tdarr_node_name: tdarr-node-1
+tdarr_node_hostname: "{{ tdarr_node_name }}"
+tdarr_node_image: haveagitgat/tdarr_node
+tdarr_node_version: latest
+tdarr_node_port: 8267
+tdarr_node_enable_quicksync: yes
+
+tdarr_server_volume: tdarr-server-data
+tdarr_config_volume: tdarr-config-data
+tdarr_logs_volume: tdarr-log-data
+tdarr_cache_volume: tdarr-cache-data
+
 # Prometheus Node Exporter
 prom_node_exp_enable: yes
 prom_node_exp_version: latest

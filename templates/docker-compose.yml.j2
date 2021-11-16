@@ -106,6 +106,72 @@ services:
       - traefik.http.services.{{ tautulli_name }}.loadbalancer.server.port=8181
       - traefik.http.routers.{{ tautulli_name }}.service={{ tautulli_name }}
       - traefik.http.routers.{{ tautulli_name }}.tls.certresolver={{ acme_provider }}
+    restart: {{ restart_policy }}
+
+{% endif %}
+{% if tdarr_server_enable %}
+  {{ tdarr_server_name }}:
+    container_name: {{ tdarr_server_name }}
+    hostname: {{ tdarr_server_hostname }}
+    image: {{ tdarr_server_image }}:{{ tdarr_server_version }}
+    environment:
+      - PUID={{ ansible_facts.user_uid }}
+      - PGID={{ ansible_facts.user_gid }}
+      - TZ={{ timezone }}
+      - UMASK_SET=002
+      - serverIP={{ tdarr_server_hostname }}
+      - serverPort={{ tdarr_server_port }}
+      - webUIPort={{ tdarr_server_webui_port }}
+    networks:
+      - {{ network_name }}
+    expose:
+      - {{ tdarr_server_webui_port }}
+      - {{ tdarr_server_port }}
+    volumes:
+      - {{ tdarr_server_volume }}:/app/server
+      - {{ tdarr_config_volume }}:/app/configs
+      - {{ tdarr_logs_volume }}:/app/logs
+      - {{ tdarr_cache_volume }}:/temp
+      - {{ nfs_data_volume }}:/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ tdarr_server_name }}.rule=Host(`{{ tdarr_server_hostname }}.{{ domain }}`)
+      - traefik.http.routers.{{ tdarr_server_name }}.entrypoints=websecure
+      - traefik.http.services.{{ tdarr_server_name }}.loadbalancer.server.port={{ tdarr_server_webui_port }}
+      - traefik.http.routers.{{ tdarr_server_name }}.service={{ tdarr_server_name }}
+      - traefik.http.routers.{{ tdarr_server_name }}.tls.certresolver={{ acme_provider }}
+    restart: {{ restart_policy }}
+
+{% endif %}
+{% if tdarr_node_enable %}
+  {{ tdarr_node_name }}:
+    container_name: {{ tdarr_node_name }}
+    hostname: {{ tdarr_node_hostname }}
+    image: {{ tdarr_node_image }}:{{ tdarr_node_version }}
+    environment:
+      - PUID={{ ansible_facts.user_uid }}
+      - PGID={{ ansible_facts.user_gid }}
+      - TZ={{ timezone }}
+      - UMASK_SET=002
+      - nodeID={{ tdarr_node_hostname }}.{{ domain }}
+      - nodeIP={{ tdarr_node_hostname }}
+      - nodePort={{ tdarr_node_port }}
+      - serverIP={{ tdarr_server_hostname }}
+      - serverPort={{ tdarr_server_port }}
+    networks:
+      - {{ network_name }}
+    expose:
+      - {{ tdarr_node_port }}
+    volumes:
+      - {{ tdarr_config_volume }}:/app/configs
+      - {{ tdarr_logs_volume }}:/app/logs
+      - {{ tdarr_cache_volume }}:/temp
+      - {{ nfs_data_volume }}:/data
+{% if tdarr_node_enable_quicksync %}
+    devices:
+      - /dev/dri:/dev/dri
+{% endif %}
+    restart: {{ restart_policy }}
 
 {% endif %}
 {% if prom_node_exp_enable %}
@@ -150,4 +216,12 @@ volumes:
   {{ plex_transcode_volume }}:
     external: true
   {{ tautulli_volume }}:
+    external: true
+  {{ tdarr_server_volume }}:
+    external: true
+  {{ tdarr_config_volume }}:
+    external: true
+  {{ tdarr_logs_volume }}:
+    external: true
+  {{ tdarr_cache_volume }}:
     external: true

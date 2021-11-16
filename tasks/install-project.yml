@@ -16,6 +16,10 @@
     - "{{ plex_volume }}"
     - "{{ plex_transcode_volume }}"
     - "{{ tautulli_volume }}"
+    - "{{ tdarr_server_volume }}"
+    - "{{ tdarr_config_volume }}"
+    - "{{ tdarr_logs_volume }}"
+    - "{{ tdarr_cache_volume }}"
 
 - name: Create NFS Data share volume
   community.docker.docker_volume:

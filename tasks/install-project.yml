@@ -26,8 +26,8 @@
     name: "{{ nfs_data_volume }}"
     driver: local
     driver_options:
-      type: nfs
-      o: "addr={{ nfs_data_server }},nolock,noatime,soft,rw"
+      type: nfs4
+      o: "addr={{ nfs_data_server }},,rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14"
       device: ":{{ nfs_data_device }}"
 
 - name: Create docker network {{ common.network.name }}

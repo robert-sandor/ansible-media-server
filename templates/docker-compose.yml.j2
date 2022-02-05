@@ -54,6 +54,7 @@ services:
       - traefik.http.routers.metrics.service=prometheus@internal
       - traefik.http.routers.metrics.tls.certresolver={{ acme_provider }}
 {% endif %}
+      - com.centurylinklabs.watchtower.enable={{ traefik_autoupdate | ternary('true', 'false')}}
     restart: {{ restart_policy }}
 
 {% endif %}
@@ -86,6 +87,7 @@ services:
       - traefik.http.services.{{ plex_name }}.loadbalancer.server.port=32400
       - traefik.http.routers.{{ plex_name }}.service={{ plex_name }}
       - traefik.http.routers.{{ plex_name }}.tls.certresolver={{ acme_provider }}
+      - com.centurylinklabs.watchtower.enable={{ plex_autoupdate | ternary('true', 'false')}}
     restart: {{ restart_policy }}
 
 {% if tautulli_enable %}
@@ -110,6 +112,7 @@ services:
       - traefik.http.services.{{ tautulli_name }}.loadbalancer.server.port=8181
       - traefik.http.routers.{{ tautulli_name }}.service={{ tautulli_name }}
       - traefik.http.routers.{{ tautulli_name }}.tls.certresolver={{ acme_provider }}
+      - com.centurylinklabs.watchtower.enable={{ tautulli_autoupdate | ternary('true', 'false')}}
     restart: {{ restart_policy }}
 
 {% endif %}
@@ -144,6 +147,7 @@ services:
       - traefik.http.services.{{ tdarr_server_name }}.loadbalancer.server.port={{ tdarr_server_webui_port }}
       - traefik.http.routers.{{ tdarr_server_name }}.service={{ tdarr_server_name }}
       - traefik.http.routers.{{ tdarr_server_name }}.tls.certresolver={{ acme_provider }}
+      - com.centurylinklabs.watchtower.enable={{ tdarr_server_autoupdate | ternary('true', 'false')}}
     restart: {{ restart_policy }}
 
 {% endif %}
@@ -176,6 +180,9 @@ services:
       - /dev/dri:/dev/dri
 {% endif %}
     restart: {{ restart_policy }}
+    labels:
+      - com.centurylinklabs.watchtower.enable={{ tdarr_node_autoupdate | ternary('true', 'false')}}
+
 
 {% endif %}
 {% if prom_node_exp_enable %}
@@ -190,6 +197,8 @@ services:
     volumes:
       - '/:/host:ro,rslave'
     restart: {{ restart_policy }}
+    labels:
+      - com.centurylinklabs.watchtower.enable={{ prom_node_exp_autoupdate | ternary('true', 'false')}}
 
 {% endif %}
 {% if pagent_enable %}
@@ -204,6 +213,8 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
     restart: {{ restart_policy }}
+    labels:
+      - com.centurylinklabs.watchtower.enable={{ pagent_autoupdate | ternary('true', 'false')}}
 
 {% endif %}
 {% if wt_enable %}
@@ -217,6 +228,12 @@ services:
 {% if wt_monitor_only %}
       - "--monitor-only"
 {% endif %}
+{% if wt_update_label_only %}
+      - "--label-enable"
+{% endif %}
+{% if wt_discord_skip_startup_message %}
+      - "--no-startup-message"
+{% endif %}
 {% if wt_discord_enable %}
       - "--notifications=slack"
       - "--notification-slack-hook-url={{ wt_discord_hook_url }}"
@@ -228,7 +245,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - {{ network_name }}
-    
+    labels:
+      - com.centurylinklabs.watchtower.enable={{ wt_autoupdate | ternary('true', 'false')}}
+
 {% endif %}
 networks:
   {{ network_name }}:

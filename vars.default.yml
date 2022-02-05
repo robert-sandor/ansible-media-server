@@ -28,6 +28,7 @@ teardown_project_dir: yes
 # Traefik
 traefik_enable: yes
 traefik_version: v2.5
+traefik_autoupdate: no
 traefik_name: traefik
 traefik_image: traefik
 traefik_enable_metrics: yes
@@ -44,6 +45,8 @@ acme_env:
 plex_version: latest
 plex_image: plexinc/pms-docker
 plex_name: plex
+plex_version: latest
+plex_autoupdate: no
 plex_hostname: "{{ plex_name }}"
 plex_volume: "{{ plex_name }}-data"
 plex_transcode_volume: "{{ plex_name }}-transcode-data"
@@ -53,6 +56,7 @@ plex_enable_quicksync: no
 
 tautulli_enable: yes
 tautulli_version: latest
+tautulli_autoupdate: no
 tautulli_image: ghcr.io/tautulli/tautulli
 tautulli_name: tautulli
 tautulli_hostname: "{{ tautulli_name }}"
@@ -64,6 +68,7 @@ tdarr_server_name: tdarr-server
 tdarr_server_hostname: tdarr
 tdarr_server_image: haveagitgat/tdarr
 tdarr_server_version: latest
+tdarr_server_autoupdate: no
 tdarr_server_port: 8266
 tdarr_server_webui_port: 8265
 
@@ -72,6 +77,7 @@ tdarr_node_name: tdarr-node-1
 tdarr_node_hostname: "{{ tdarr_node_name }}"
 tdarr_node_image: haveagitgat/tdarr_node
 tdarr_node_version: latest
+tdarr_node_autoupdate: no
 tdarr_node_port: 8267
 tdarr_node_enable_quicksync: yes
 
@@ -83,6 +89,7 @@ tdarr_cache_volume: tdarr-cache-data
 # Prometheus Node Exporter
 prom_node_exp_enable: yes
 prom_node_exp_version: latest
+prom_node_exp_autoupdate: no
 prom_node_exp_name: node-exporter 
 prom_node_exp_image: prom/node-exporter
 
@@ -92,6 +99,7 @@ pagent_name: pagent
 pagent_hostname: "{{ pagent_name }}"
 pagent_image: portainer/agent
 pagent_version: latest
+pagent_autoupdate: no
 
 # watchtower - to monitor for updated docker images
 wt_enable: yes
@@ -100,6 +108,9 @@ wt_version: latest
 wt_image: containrrr/watchtower
 wt_cron_schedule: "0 0 1 * * *"
 wt_discord_enable: no
+wt_discord_skip_startup_message: no
 wt_discord_hook_url: https://discord.com/api/webhooks/.../.../slack
 wt_discord_indentifier: watchtower-{{ project_name }}
-wt_monitor_only: yes
+wt_monitor_only: no
+wt_update_label_only: yes
+wt_autoupdate: no

@@ -75,7 +75,7 @@ services:
     volumes:
       - {{ plex_volume }}:/config
       - {{ plex_transcode_volume }}:/transcode
-      - {{ nfs_data_volume }}:/data
+      - {{ data_volume }}:/data
 {% if plex_enable_quicksync %}
     devices:
       - /dev/dri:/dev/dri
@@ -134,12 +134,13 @@ services:
     expose:
       - {{ tdarr_server_webui_port }}
       - {{ tdarr_server_port }}
+      - {{ tdarr_node_port }}
     volumes:
       - {{ tdarr_server_volume }}:/app/server
       - {{ tdarr_config_volume }}:/app/configs
       - {{ tdarr_logs_volume }}:/app/logs
       - {{ tdarr_cache_volume }}:/temp
-      - {{ nfs_data_volume }}:/data
+      - {{ data_volume }}:/data
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ tdarr_server_name }}.rule=Host(`{{ tdarr_server_hostname }}.{{ domain }}`)
@@ -174,7 +175,7 @@ services:
       - {{ tdarr_config_volume }}:/app/configs
       - {{ tdarr_logs_volume }}:/app/logs
       - {{ tdarr_cache_volume }}:/temp
-      - {{ nfs_data_volume }}:/data
+      - {{ data_volume }}:/data
 {% if tdarr_node_enable_quicksync %}
     devices:
       - /dev/dri:/dev/dri
@@ -182,7 +183,6 @@ services:
     restart: {{ restart_policy }}
     labels:
       - com.centurylinklabs.watchtower.enable={{ tdarr_node_autoupdate | ternary('true', 'false')}}
-
 
 {% endif %}
 {% if prom_node_exp_enable %}
@@ -254,7 +254,7 @@ networks:
     external: true
 
 volumes:
-  {{ nfs_data_volume }}:
+  {{ data_volume }}:
     external: true
   {{ acme_volume }}:
     external: true

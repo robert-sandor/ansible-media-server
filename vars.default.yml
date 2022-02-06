@@ -8,9 +8,16 @@ network_name: "{{ project_name }}-net"
 domain: example.com
 validate_certificates: "{{ not acme_testing_mode }}"
 
+data_volume: data
+data_volume_type: cifs
+
+cifs_data_server: 192.168.1.10
+cifs_data_device: data
+cifs_data_username: user
+cifs_data_password: changeme
+
 nfs_data_server: 192.168.1.10
 nfs_data_device: /data
-nfs_data_volume: nfs-data
 
 # Updates
 update_system: no
@@ -45,7 +52,6 @@ acme_env:
 plex_version: latest
 plex_image: plexinc/pms-docker
 plex_name: plex
-plex_version: latest
 plex_autoupdate: no
 plex_hostname: "{{ plex_name }}"
 plex_volume: "{{ plex_name }}-data"
